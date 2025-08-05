@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created by Bohan on Mar 5, 2025
-Tract Classification Project
-- Based on previous code from Soumyanil Banerjee on June 20, 2024
-- Added Dice loss
-- Add logic for ROI data
-@author: Bohan
-"""
 from Embedding_layer import ROIFeatureExtractor
 import RESNET152_ATT_naive
 from CenterLoss import CenterLoss
@@ -464,8 +454,5 @@ if __name__ == "__main__":
 
 print('Best epoch:{}\n'.format(best_epoch_idx))
 conf_mat, precision, recall, f1=history[best_epoch_idx]
-# print('conf_mat:\n',np.array_str(conf_mat,max_line_width=10000))
 print('Precison:{:.4f}\nRecall:{:.4f}\nf1:{:.4f}\n'.format(precision,recall,f1)) 
-# np.save('confMat.npy',conf_mat)
 loss_record=np.vstack((np.array(avg_training_loss_record),np.array(avg_testing_loss_record)))
-# np.save('loss_record.npy',loss_record)

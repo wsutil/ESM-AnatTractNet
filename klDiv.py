@@ -21,7 +21,6 @@ class KLDivLoss(nn.Module):
         output_log_softmax = torch.log_softmax(output, dim=1)
 
         loss_kd = nn.KLDivLoss()(output_log_softmax, target_output)
-        # loss_kd = -torch.mean(torch.sum(output_log_softmax * target_output, dim=1))
         return self.loss_weight * loss_kd * (self.temperature**2)
     
     def kl_div_cluster(self, output, target_output):

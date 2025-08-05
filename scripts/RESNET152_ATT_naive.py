@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 import math
 import torch
 import torch.nn as nn
@@ -20,9 +14,6 @@ class BasicBlock(nn.Module):
         self.conv2 = nn.Conv1d(planes, planes,kernel_size=3,stride=1,padding=1,bias=False)
         self.bn2 = nn.BatchNorm1d(planes)
         self.downsample = downsample
-        ###ATT
-        #self.att = nn.Conv1d(planes,planes,kernel_size=1,bias=True)
-        #self.sigmoid = nn.Sigmoid()
         self.stride = stride
 
     def forward(self, x):
@@ -37,11 +28,6 @@ class BasicBlock(nn.Module):
 
         if self.downsample is not None:
             residual = self.downsample(x)
-
-        ###ATT
-        #out_att = self.att(out)
-        #out_att = self.sigmoid(out_att)
-        #out = out*out_att
 
         out += residual
         out = self.relu(out)
@@ -96,15 +82,6 @@ class Bottleneck(nn.Module):
     
 class ResNet(nn.Module):
     def __init__(self, block, layers, num_classes=15):
-        ##self.inplanes = 64*3
-        ##super(ResNet, self).__init__()
-        
-        ##self.conv1_1=nn.Conv1d(3,64,kernel_size=1,stride=1,padding=0,bias=False)
-        ##self.conv1_2=nn.Conv1d(3,64,kernel_size=3,stride=1,padding=1,bias=False)
-        ##self.conv1_3= nn.Conv1d(3, 64, kernel_size=5, stride=1, padding=2,bias=False)
-        ##self.bn1_1 = nn.BatchNorm1d(64)
-        ##self.bn1_2 = nn.BatchNorm1d(64)
-        ##self.bn1_3 = nn.BatchNorm1d(64)
 
         self.inplanes=64
         groupNum=1
@@ -113,7 +90,6 @@ class ResNet(nn.Module):
         self.bn1=nn.BatchNorm1d(64)
         ###ATT
         self.att=nn.Conv1d(64,1,kernel_size=1,bias=True)
-        #self.sigmoid=nn.Sigmoid()
 
         self.relu = nn.ReLU6(inplace=True)
         self.maxpool = nn.MaxPool1d(kernel_size=3, stride=2, padding=1)
@@ -152,13 +128,9 @@ class ResNet(nn.Module):
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
-        #print('x',x.size())
         ###ATT
         x_att = self.att(x)
-        #x_att = self.sigmoid(x_att)
-        #print('att',x_att.size())
         x = x*x_att
-        #print('x*att',x.size())
 
         x = self.relu(x)
         x = self.maxpool(x)
@@ -176,13 +148,11 @@ class ResNet(nn.Module):
         return F.log_softmax(x),embed,x_att#input=x,dim=1
 
 
-
 def resnet18(**kwargs):
     """Constructs a ResNet-18 model.
     """
     model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
     return model
-
 
 def resnet34(**kwargs):
     """Constructs a ResNet-34 model.

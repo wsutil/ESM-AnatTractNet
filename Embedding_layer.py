@@ -3,7 +3,7 @@ import torch.nn as nn
 class ROIFeatureExtractor(nn.Module):
     def __init__(self, embedding_layer, ROI_EMBEDDING_DIM, hidden_dim):
         super(ROIFeatureExtractor, self).__init__()
-        self.embedding = embedding_layer  # 直接使用已有 embedding
+        self.embedding = embedding_layer
         self.mlp = nn.Sequential(
             nn.Linear(ROI_EMBEDDING_DIM, hidden_dim),
             nn.ReLU(),
@@ -12,6 +12,6 @@ class ROIFeatureExtractor(nn.Module):
         print(f"using ROI with emb: {ROI_EMBEDDING_DIM}")
 
     def forward(self, roi_input):
-        embedded = self.embedding(roi_input)  # (b, 100, embedding_dim)
-        features = self.mlp(embedded)  # 让 ROI 通过 MLP 提取更有效的特征
+        embedded = self.embedding(roi_input)
+        features = self.mlp(embedded)  
         return features

@@ -1,6 +1,5 @@
 import os
 import sys
-# del os.environ['MKL_NUM_THREADS'] # error corrected by MH 10/12/2022 (add these three lines)
 import torch
 from torch.autograd import Variable
 import torch.utils.data as utils
@@ -17,10 +16,8 @@ import time
 import gc
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 import torch.utils.data as utils
-# 数据加载
 import os
 import sys
-# del os.environ['MKL_NUM_THREADS'] # error corrected by MH 10/12/2022 (add these three lines)
 from Embedding_layer import ROIFeatureExtractor
 import torch
 from torch.autograd import Variable
@@ -50,37 +47,30 @@ import torch.nn.functional as F
 
 def loadmat(filename):
     '''
-    读取 MATLAB v7.3 `.mat` 文件（Whole_tracks 作为 tracks）
+    MATLAB v7.3 `.mat` (Whole_tracks) 
     '''
     output = dict()
     
-    # 打开 HDF5 MAT 文件
     with h5py.File(filename, 'r') as data:
-        # 读取 Whole_tracks 变量
         if 'Whole_tracks' not in data:
             raise KeyError("❌ 错误: 'Whole_tracks' 变量不存在！")
 
-        whole_tracks = data['Whole_tracks']  # 结构体 Whole_tracks
+        whole_tracks = data['Whole_tracks']  
 
-        # 确保它有 `count` 和 `data`
         if 'count' not in whole_tracks or 'data' not in whole_tracks:
             raise KeyError(f"❌ 错误: 'Whole_tracks' 结构不完整！包含: {list(whole_tracks.keys())}")
 
-        # 读取 count（可能是字符编码格式，需要解析）
         count = whole_tracks['count'][()]  
         print("🔍 Whole_tracks['count'] 数据:", count)
         print("🔍 数据类型:", type(count))
 
-        # 直接转换成整数
         total_count = int(count.item())
         print(f'total_count: {total_count}')
-        # 读取 Whole_tracks['data']
         track = []
         for i in range(total_count):
             data_ref = whole_tracks['data'][i].item()
             track.append(np.transpose(data[data_ref][:]).astype(np.float32))
 
-        # 组织输出
         output['tracks'] = {
             'count': total_count,
             'data': track
@@ -202,7 +192,6 @@ def loadmat(filename):
         if 'count' not in whole_tracks or 'data' not in whole_tracks:
             raise KeyError(f"❌ Error: 'Whole_tracks' Incomplete structure! Include: {list(whole_tracks.keys())}")
 
-        # 读取 count
         count = int(whole_tracks['count'][()].item())
         track = [np.transpose(data[whole_tracks['data'][i].item()][:]).astype(np.float32) for i in range(count)]
     
@@ -233,14 +222,11 @@ def process_file(matpath, label_path, model, roi_extractor, clustering_layer, de
     X_test = mat['tracks']['data']
     X_test = np.asarray(X_test).astype(np.float32)
     X_test_original = np.transpose(X_test, (0, 2, 1))
-
    
     y_test = load_labels(label_path)
     y_test_list = y_test
-
     
     X_test, y_test = udflip(X_test_original, y_test, shuffle=False)
-
     
     y_test = torch.from_numpy(y_test.astype(np.int64)).to(device)  
     X_test = torch.from_numpy(X_test).to(device)
@@ -259,13 +245,10 @@ def process_file(matpath, label_path, model, roi_extractor, clustering_layer, de
     with torch.no_grad():
         for data, target in tst_loader:
             labels += target.cpu().numpy().tolist()
-
             
             data, target = data.to(device), target.to(device)
-
             
             data_processed = preprocess_fiber_input(data, device=device, net_type='no_roi')
-
             
             output, embed, *_ = model(data_processed)  
 
@@ -289,7 +272,6 @@ def process_file(matpath, label_path, model, roi_extractor, clustering_layer, de
         auroc, auprc = None, None
 
     return precision, recall, f1, auroc, auprc
-
 
 def main():
     data_dir = '../Testing_Set/'  
@@ -323,7 +305,6 @@ def main():
 
             results.append([precision, recall, f1, auroc, auprc])
 
-    # 计算均值和标准差
     results = np.array(results)
     mean_values = np.mean(results, axis=0)
     std_values = np.std(results, axis=0)

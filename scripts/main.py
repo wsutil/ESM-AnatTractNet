@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jan  5 01:25:02 2018
-
-@author: ht
-"""
 import RESNET152_ATT_naive
 from CenterLoss import CenterLoss
 from ADAMW import AdamW
@@ -31,25 +24,7 @@ GPUINX='0'
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
 os.environ["CUDA_VISIBLE_DEVICES"]=GPUINX
 np.random.seed(987)
-
-#"""confusion matrix"""
-#def getConfusionInfo(mat,classname):#input: np array,list of classnames
-#    for i in range(mat.shape[0]):
-#        mat[i]=mat[i]/np.sum(mat[i])
-#    df_cm = pd.DataFrame(mat, index = classname,columns = classname)
-#    plt.figure(figsize = (10,7))
-#    sn.heatmap(df_cm, annot=True, fmt='.2f')
-#    
-#    for i in range(mat.shape[0]):
-#        tp=mat[i,i]
-#        fp=np.sum(mat[:,i])-mat[i,i]
-#        fn=np.sum(mat[i,:])-mat[i,i]
-#        if 2*tp+fn+fp==0:
-#            f1=0.
-#        else:
-#            f1=2*tp/(2*tp+fn+fp)
-#        print(classname[i],f1)
-        
+    
 """v flip and shuffle"""
 def udflip(X_nparray,y_nparray,shuffle=True):
     output=np.zeros((X_nparray.shape[0],X_nparray.shape[1],X_nparray.shape[2]),dtype=np.float32)
@@ -162,19 +137,16 @@ tst_set=utils.TensorDataset(X_test,y_test)
 tst_loader=utils.DataLoader(tst_set,batch_size=args.test_batch_size,shuffle=False,**kwargs)
 
 """init model"""
-model=RESNET152_ATT_naive.resnet18(num_classes=NCLASS)###RESNET152.resnet152(num_classes=max(y_test_list)+1)
-###load weight
-##model.load_state_dict(torch.load('../../code/RESNET_system6_ATT/best.model'))
-##print('weights loaded!')
-#########
+model=RESNET152_ATT_naive.resnet18(num_classes=NCLASS)
+
 loss = nn.NLLLoss(size_average=True)#log-softmax applied in the network
 centerloss=CenterLoss(NCLASS,512,args.center_weight)#512*4 if bottleneck applied
 if args.cuda:
     model.cuda()
     loss.cuda()
     centerloss.cuda()
-optimizer_nll = AdamW(model.parameters(),lr=args.lr)###torch.optim.Adam(model.parameters(), lr=args.lr)
-optimizer_center = AdamW(centerloss.parameters(),lr=1e-4)###torch.optim.Adam(centerloss.parameters(), lr=0.0001)
+optimizer_nll = AdamW(model.parameters(),lr=args.lr)
+optimizer_center = AdamW(centerloss.parameters(),lr=1e-4)
 def focalLoss(output,target):
     '''
     Args:
@@ -206,7 +178,6 @@ def train(epoch):
         tloss=focalLoss(output,target)
         closs=centerloss(target,embed)
         totalloss=tloss+closs
-        ###print(tloss.data[0])
         optimizer_nll.zero_grad()
         optimizer_center.zero_grad()
         
@@ -235,20 +206,16 @@ def test():
     model.eval()
     test_loss = 0
     centering_loss=0.
-    #preds=list()
     probs=list()
     for data, target in tst_loader:
         if args.cuda:
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data, volatile=True), Variable(target)
         output,embed,_ = model(data)
-        ###test_loss += F.nll_loss(output, target, size_average=False).data[0] # sum up batch loss
         test_loss+=loss(output,target).data[0]
         centering_loss+=centerloss(target,embed).data[0]
-        ###print(test_loss)
         probs.append(output.data.cpu().numpy())
     
-    ###test_loss /= len(tst_loader.dataset)
     preds=aug_at_test(probs,mode='max')
     conf_mat=confusion_matrix(y_test_list,preds)
     precision,recall,f1,sup=precision_recall_fscore_support(y_test_list,preds,average='macro')
@@ -258,11 +225,9 @@ def test():
     print('Precision,Recall,macro_f1',precision,recall,f1)
     return conf_mat,precision, recall, f1    
     
-
 """start to train"""
 best_epoch_idx=-1
 best_f1=0.
-#f1_history=np.zeros(args.epochs,dtype=np.float32)
 history=list()
 patience=args.patience
 for epoch in range(0,args.epochs):
@@ -286,14 +251,7 @@ for epoch in range(0,args.epochs):
 print('Best epoch:{}\n'.format(best_epoch_idx))
 conf_mat, precision, recall, f1=history[best_epoch_idx]
 print('conf_mat:\n',np.array_str(conf_mat,max_line_width=10000))
-print('Precison:{:.4f}\nRecall:{:.4f}\nf1:{:.4f}\n'.format(precision,recall,f1)) 
-#classname=['c'+str(i+1) for i in range(NCLASS)]
-#getConfusionInfo(conf_mat,classname)
-    
-    
-    
-    
-    
+print('Precison:{:.4f}\nRecall:{:.4f}\nf1:{:.4f}\n'.format(precision,recall,f1))    
     
     
     

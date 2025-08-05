@@ -9,7 +9,6 @@ class CenterLoss(nn.Module):
         self.feat_dim = feat_dim
         self.loss_weight = loss_weight
         self.centers = nn.Parameter(torch.randn(num_classes, feat_dim))
-        # self.register_parameter('centers', self.centers) # no need to register manually. See nn.Module.__setattr__(...)
         self.use_cuda = False
 
     def forward(self, y, feat):

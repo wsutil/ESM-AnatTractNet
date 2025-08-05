@@ -1,6 +1,5 @@
 import os
 import sys
-# del os.environ['MKL_NUM_THREADS'] # error corrected by MH 10/12/2022 (add these three lines)
 import torch
 from torch.autograd import Variable
 import torch.utils.data as utils
@@ -17,10 +16,8 @@ import time
 import gc
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 import torch.utils.data as utils
-# 数据加载
 import os
 import sys
-# del os.environ['MKL_NUM_THREADS'] # error corrected by MH 10/12/2022 (add these three lines)
 from Embedding_layer import ROIFeatureExtractor
 import torch
 from torch.autograd import Variable
@@ -39,8 +36,6 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 import torch.nn.functional as F
 import argparse
 
-
-
 from Util import *
 import os
 import numpy as np
@@ -51,7 +46,6 @@ from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, r
 import torch.nn.functional as F
 
 def process_file(matpath, label_path, model, roi_extractor, clustering_layer, device, NCLASS, args_test_batch_size):
-    """ 处理单个测试文件，并返回其指标 """
     print(f"📌 preprocess data: {matpath}")
     
     mat = loadmat(matpath)
@@ -114,8 +108,8 @@ def process_file(matpath, label_path, model, roi_extractor, clustering_layer, de
 
 
 def main():
-    data_dir = '../Testing_Set/'  # 数据目录
-    classnum = 15  # 类别数
+    data_dir = '../Testing_Set/' 
+    classnum = 15 
     args_test_batch_size = 10000
     NCLASS = int(classnum)
 
@@ -127,12 +121,10 @@ def main():
     roi_extractor = ROIFeatureExtractor(roi_embedding_layer, 32, hidden_dim=64).to(device)
     clustering_layer = ClusterlingLayer(embedding_dimension=512, num_clusters=NCLASS, alpha=1.0).to(device)
 
-    # 加载模型权重
     model.load_state_dict(torch.load('focal_loss_and_cluster_loss_c_100.0_FE_dim_32.model', map_location=device))
     roi_extractor.load_state_dict(torch.load('FE_layer_focal_loss_and_cluster_loss_c_100.0_FE_dim_32.model', map_location=device))
     clustering_layer.load_state_dict(torch.load('CLS_layer_focal_loss_and_cluster_loss_c_100.0_FE_dim_32.model', map_location=device))
 
-    # 遍历所有 .mat 文件
     results = []
     for filename in os.listdir(data_dir):
         if filename.endswith('_tracks.mat'):
@@ -153,7 +145,6 @@ def main():
 
             results.append([precision, recall, f1, auroc, auprc])
 
-    # 计算均值和标准差
     results = np.array(results)
     mean_values = np.mean(results, axis=0)
     std_values = np.std(results, axis=0)

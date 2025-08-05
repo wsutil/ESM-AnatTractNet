@@ -53,17 +53,14 @@ def loadmat(filename):
     
     with h5py.File(filename, 'r') as data:
         if 'Whole_tracks' not in data:
-            raise KeyError("❌ 错误: 'Whole_tracks' 变量不存在！")
+            raise KeyError("❌ Error: 'Whole_tracks' does not exist!")
 
         whole_tracks = data['Whole_tracks']  
 
         if 'count' not in whole_tracks or 'data' not in whole_tracks:
-            raise KeyError(f"❌ 错误: 'Whole_tracks' 结构不完整！包含: {list(whole_tracks.keys())}")
+            raise KeyError(f"❌ Error: 'Whole_tracks' structure is incomplete！: {list(whole_tracks.keys())}")
 
         count = whole_tracks['count'][()]  
-        print("🔍 Whole_tracks['count'] 数据:", count)
-        print("🔍 数据类型:", type(count))
-
         total_count = int(count.item())
         print(f'total_count: {total_count}')
         track = []
@@ -101,7 +98,6 @@ def _todict(matobj):
             dict[strg] = elem
     return dict
 
-#%%
 def mySoftmax(z):
     assert len(z.shape) == 2
     s = np.max(z, axis=1)

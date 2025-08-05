@@ -269,7 +269,7 @@ def process_file(matpath, label_path, model, roi_extractor, roi_embedding_layer,
         auroc = roc_auc_score(labels, probs, multi_class='ovr')
         auprc = average_precision_score(labels, probs, average='macro')
     except ValueError as e:
-        print(f"AUROC / AUPRC 计算错误: {e}")
+        print(f"AUROC / AUPRC error: {e}")
         auroc, auprc = None, None
 
     return precision, recall, f1, auroc, auprc

@@ -108,7 +108,6 @@ class ResNet(nn.Module):
         groupNum=1
         super(ResNet,self).__init__()
         self.conv1=nn.Conv1d(input_ch,64,kernel_size=3,stride=1,padding=1,bias=False) # without ROI info
-        # self.conv1=nn.Conv1d(4,64,kernel_size=3,stride=1,padding=1,bias=False) # with ROI info (4 channels: 3 for coordinates and 1 for ROI)
         self.bn1=nn.BatchNorm1d(64)
         self.att=nn.Conv1d(64,1,kernel_size=1,bias=True)
 
@@ -136,7 +135,6 @@ class ResNet(nn.Module):
         self.middle_fc3 = nn.Linear(512 * block.expansion, num_classes)
                 
         self.avgpool = nn.AvgPool1d(5)  # required for 100 points per fiber
-        # self.avgpool = nn.AvgPool1d(2)  # required for 20 points per fiber
         self.fc = nn.Linear(512*groupNum * block.expansion, num_classes)
 
         for m in self.modules():
@@ -203,10 +201,6 @@ class ResNet(nn.Module):
         x = x.view(x.size(0), -1)
         embed=x
         x = self.fc(x)
-
-        # Previous return statement (Min-Hee Code)
-        # return F.log_softmax(x),embed,x_att # input=x,dim=1
-
         # New return statement (x: non-softmaxed output)
         # with intermediate outputs for KL-divergence loss + feature map loss
         return F.log_softmax(x), embed, x_att, x, out1, out2, out3, final_feat, out1_feat, out2_feat, out3_feat

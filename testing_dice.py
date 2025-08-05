@@ -101,7 +101,6 @@ def process_file(matpath, label_path, model, roi_extractor, clustering_layer, de
         auroc = roc_auc_score(labels, probs, multi_class='ovr')
         auprc = average_precision_score(labels, probs, average='macro')
     except ValueError as e:
-        print(f"AUROC / AUPRC 计算错误: {e}")
         auroc, auprc = None, None
 
     return precision, recall, f1, auroc, auprc
@@ -132,14 +131,12 @@ def main():
             label_path = matpath.replace('_tracks.mat', '_class_label.mat')
 
             if not os.path.exists(label_path):
-                print(f"❌ 找不到标签文件: {label_path}")
                 continue
             start_time = time.time()
             precision, recall, f1, auroc, auprc = process_file(
                 matpath, label_path, model, roi_extractor, clustering_layer, device, NCLASS, args_test_batch_size
             )
             print(time.time()-start_time,'seconds')
-            print(f"📊 {filename} 指标:")
             print(f"  Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
             print(f"  AUROC: {auroc:.4f}, AUPRC: {auprc:.4f}")
 
@@ -149,7 +146,6 @@ def main():
     mean_values = np.mean(results, axis=0)
     std_values = np.std(results, axis=0)
 
-    print("\n📊 所有测试文件的平均指标:")
     print(f"  Precision: {mean_values[0]:.4f} ± {std_values[0]:.4f}")
     print(f"  Recall: {mean_values[1]:.4f} ± {std_values[1]:.4f}")
     print(f"  F1-score: {mean_values[2]:.4f} ± {std_values[2]:.4f}")

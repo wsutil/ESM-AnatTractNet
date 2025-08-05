@@ -9,7 +9,6 @@ class CenterLoss(nn.Module):
         self.feat_dim = feat_dim
         self.loss_weight = loss_weight
         self.centers = nn.Parameter(torch.randn(num_classes, feat_dim))
-        # self.register_parameter('centers', self.centers) # no need to register manually. See nn.Module.__setattr__(...)
         self.use_cuda = False
 
     def forward(self, y, feat):
@@ -21,7 +20,6 @@ class CenterLoss(nn.Module):
             hist = Variable(torch.histc(y.data.float(),bins=self.num_classes,min=0,max=self.num_classes) + 1)
 
         centers_count = hist.index_select(0,y.long())
-
 
         # To squeeze the Tenosr
         batch_size = feat.size()[0]
@@ -49,21 +47,15 @@ class CenterLoss(nn.Module):
 
 def main():
     ct = CenterLoss(10,2)
-    # ct = ct.cuda()
     print(list(ct.parameters()))
 
     print(ct.centers.grad)
 
-    y = Variable(torch.Tensor([0,0,0,1]))#.cuda()
-    # print y
-    feat = Variable(torch.zeros(4,2),requires_grad=True)#.cuda()
-    # print feat
-
+    y = Variable(torch.Tensor([0,0,0,1]))
+    feat = Variable(torch.zeros(4,2),requires_grad=True)
     out = ct(y,feat)
     out.backward()
     print(ct.centers.grad)
-
-
 
 if __name__ == '__main__':
     main()
